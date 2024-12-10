@@ -3,7 +3,7 @@ const github = require('@actions/github')
 const glob = require('@actions/glob')
 const fs = require('fs')
 const path = require('path')
-// const minimatch = require('minimatch');
+const { minimatch } = require('minimatch')
 const { RateLimiter } = require('limiter')
 
 const vtUpload = require('./vt')
@@ -105,8 +105,7 @@ async function processRelease(inputs, limiter, octokit, release) {
     const results = [];
     for (const asset of assets.data) {
         // Check if asset.name matches any of the patterns
-        const isMatched = matchPattern(asset.name, inputs.files);
-        // const isMatched = patterns.some(pattern => minimatch(asset.name, pattern));
+        const isMatched = patterns.some(pattern => minimatch(asset.name, pattern));
         if (!isMatched) {
             core.info(`Skipping Asset (not matched by file_globs): ${asset.name}`);
             continue;
@@ -131,14 +130,6 @@ async function processRelease(inputs, limiter, octokit, release) {
         results.push(result);
     }
     return results;
-}
-
-function matchPattern(name, patterns) {
-    return patterns.some(pattern => new RegExp(
-        '^' +
-        pattern.replace(/\*\*/g, '.*').replace(/\*/g, '[^/]*').replace(/\./g, '\\.') +
-        '$'
-    ).test(name));
 }
 
 /**

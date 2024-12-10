@@ -12,7 +12,7 @@
     "axios": "1.7.9",
     "form-data": "4.0.1",
     "limiter": "2.1.0",
-    "minimatch": "3.1.2"
+    "minimatch": "10.0.1"
   },
   "devDependencies": {
     "@vercel/ncc": "0.38.3",
