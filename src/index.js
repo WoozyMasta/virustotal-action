@@ -87,7 +87,6 @@ async function processRelease(inputs, limiter, octokit, release) {
     if (!assets?.data?.length) {
         console.log('assets:', assets)
         throw new Error(`No Assets Found for Release: ${release.id}`)
-        // return core.setFailed(`No Assets Found for Release: ${release_id}`)
     }
 
     // Create Temp
@@ -98,9 +97,19 @@ async function processRelease(inputs, limiter, octokit, release) {
         fs.mkdirSync(assetsPath)
     }
 
+    // Initialize globber with file_globs
+    const globber = await glob.create(inputs.files.join('\n'), { matchDirectories: false });
+
     // Process Assets
     const results = []
     for (const asset of assets.data) {
+        // Check if the asset matches file_globs
+        const isMatched = (await globber.glob()).some(file => path.basename(file) === asset.name);
+        if (!isMatched) {
+            core.info(`Skipping Asset (not matched by file_globs): ${asset.name}`);
+            continue;
+        }
+
         core.info(`--- Processing Asset: ${asset.name}`)
         if (inputs.rate) {
             const remainingRequests = await limiter.removeTokens(1)
@@ -117,7 +126,6 @@ async function processRelease(inputs, limiter, octokit, release) {
         })
         fs.writeFileSync(filePath, Buffer.from(file.data))
         const result = await processVt(inputs, asset.name, filePath)
-        // console.log('result:', result)
         results.push(result)
     }
     return results

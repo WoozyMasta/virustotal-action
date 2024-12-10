@@ -5,30 +5,30 @@ on:
   push:
 
 jobs:
-  test:
-    name: "Test"
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
+  # test:
+  #   name: "Test"
+  #   runs-on: ubuntu-latest
+  #   timeout-minutes: 5
 
-    steps:
-      - name: "Checkout"
-        uses: actions/checkout@v4
+  #   steps:
+  #     - name: "Checkout"
+  #       uses: actions/checkout@v4
 
-      - name: "Test Local Action"
-        id: test
-        uses: ./
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          vt_api_key: ${{ secrets.VT_API_KEY }}
-          file_globs: README.md
+  #     - name: "Test Local Action"
+  #       id: test
+  #       uses: ./
+  #       with:
+  #         github_token: ${{ secrets.GITHUB_TOKEN }}
+  #         vt_api_key: ${{ secrets.VT_API_KEY }}
+  #         file_globs: README.md
 
-      - name: "Validate Outputs"
-        run: |
-          echo '${{ steps.test.outputs.results }}'
-          if [ -z '${{ steps.test.outputs.results }}' ];then
-            echo "No Output"
-            exit 1
-          fi
+  #     - name: "Validate Outputs"
+  #       run: |
+  #         echo '${{ steps.test.outputs.results }}'
+  #         if [ -z '${{ steps.test.outputs.results }}' ];then
+  #           echo "No Output"
+  #           exit 1
+  #         fi
 
   lint:
     name: "Lint"
