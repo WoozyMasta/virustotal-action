@@ -3,6 +3,7 @@ const github = require('@actions/github')
 const glob = require('@actions/glob')
 const fs = require('fs')
 const path = require('path')
+const minimatch = require('minimatch');
 const { RateLimiter } = require('limiter')
 
 const vtUpload = require('./vt')
@@ -83,52 +84,52 @@ async function processRelease(inputs, limiter, octokit, release) {
     const assets = await octokit.rest.repos.listReleaseAssets({
         ...github.context.repo,
         release_id: release.id,
-    })
+    });
     if (!assets?.data?.length) {
-        console.log('assets:', assets)
-        throw new Error(`No Assets Found for Release: ${release.id}`)
+        console.log('assets:', assets);
+        throw new Error(`No Assets Found for Release: ${release.id}`);
     }
 
     // Create Temp
-    console.log('RUNNER_TEMP:', process.env.RUNNER_TEMP)
-    const assetsPath = path.join(process.env.RUNNER_TEMP, 'assets')
-    console.log('assetsPath:', assetsPath)
+    console.log('RUNNER_TEMP:', process.env.RUNNER_TEMP);
+    const assetsPath = path.join(process.env.RUNNER_TEMP, 'assets');
+    console.log('assetsPath:', assetsPath);
     if (!fs.existsSync(assetsPath)) {
-        fs.mkdirSync(assetsPath)
+        fs.mkdirSync(assetsPath);
     }
 
-    // Initialize globber with file_globs
-    const globber = await glob.create(inputs.files.join('\n'), { matchDirectories: false });
+    // Convert file_globs to match patterns
+    const patterns = inputs.files;
 
     // Process Assets
-    const results = []
+    const results = [];
     for (const asset of assets.data) {
-        // Check if the asset matches file_globs
-        const isMatched = (await globber.glob()).some(file => path.basename(file) === asset.name);
+        // Check if asset.name matches any of the patterns
+        const isMatched = patterns.some(pattern => minimatch(asset.name, pattern));
         if (!isMatched) {
             core.info(`Skipping Asset (not matched by file_globs): ${asset.name}`);
             continue;
         }
 
-        core.info(`--- Processing Asset: ${asset.name}`)
+        core.info(`--- Processing Asset: ${asset.name}`);
         if (inputs.rate) {
-            const remainingRequests = await limiter.removeTokens(1)
-            console.log('remainingRequests:', remainingRequests)
+            const remainingRequests = await limiter.removeTokens(1);
+            console.log('remainingRequests:', remainingRequests);
         }
-        const filePath = path.join(assetsPath, asset.name)
-        console.log('filePath:', filePath)
+        const filePath = path.join(assetsPath, asset.name);
+        console.log('filePath:', filePath);
         const file = await octokit.rest.repos.getReleaseAsset({
             ...github.context.repo,
             asset_id: asset.id,
             headers: {
                 Accept: 'application/octet-stream',
             },
-        })
-        fs.writeFileSync(filePath, Buffer.from(file.data))
-        const result = await processVt(inputs, asset.name, filePath)
-        results.push(result)
+        });
+        fs.writeFileSync(filePath, Buffer.from(file.data));
+        const result = await processVt(inputs, asset.name, filePath);
+        results.push(result);
     }
-    return results
+    return results;
 }
 
 /**
