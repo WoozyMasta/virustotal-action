@@ -23,12 +23,12 @@ const vtUpload = require('./vt')
 
             /** @type {Object[]} */
             let results
-            if (inputs.files?.length) {
-                core.info('\u001b[36mProcessing Files Globs')
-                results = await processFiles(inputs, limiter)
-            } else if (release) {
+            if (release) {
                 core.info('\u001b[36mProcessing Release Assets')
                 results = await processRelease(inputs, limiter, octokit, release)
+            } else if (inputs.files?.length) {
+                core.info('\u001b[36mProcessing Files Globs')
+                results = await processFiles(inputs, limiter)
             } else {
                 return core.setFailed('No files or release to process.')
             }
