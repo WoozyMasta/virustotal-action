@@ -26,8 +26,9 @@ for files up to `650MB`. Therefore, files over 32MB will consume 2 API calls.
 * `file_globs` - For glob pattern examples, see: <https://github.com/actions/toolkit/tree/main/packages/glob#patterns>
 
 ```yaml
-- name: 'VirusTotal'
-  uses: WoozyMasta/virustotal-action@v1
+- name: VirusTotal Artifacts Scan
+  uses: WoozyMasta/virustotal-action@v1.0.0
+            
   with:
       github_token: ${{ secrets.GITHUB_TOKEN }}
       vt_api_key: ${{ secrets.VT_API_KEY }}
@@ -60,8 +61,8 @@ install-linux.deb/ZDAzY2M2ZGQzZmEwZWEwZTI2NjQ5NmVjZDcwZmY0YTY6MTcxNzU2NzI3Ng==,i
 ```
 
 ```yaml
-- name: 'VirusTotal'
-  uses: WoozyMasta/virustotal-action@v1
+- name: VirusTotal Artifacts Scan
+  uses: WoozyMasta/virustotal-action@v1.0.0
   id: vt
   with:
     github_token: ${{ secrets.GITHUB_TOKEN }}
@@ -76,8 +77,8 @@ install-linux.deb/ZDAzY2M2ZGQzZmEwZWEwZTI2NjQ5NmVjZDcwZmY0YTY6MTcxNzU2NzI3Ng==,i
 With File Globs:
 
 ```yaml
-- name: 'VirusTotal'
-  uses: WoozyMasta/virustotal-action@v1
+- name: VirusTotal Artifacts Scan
+  uses: WoozyMasta/virustotal-action@v1.0.0
   with:
     github_token: ${{ secrets.GITHUB_TOKEN }}
     vt_api_key: ${{ secrets.VT_API_KEY }}
@@ -87,8 +88,8 @@ With File Globs:
 Multiple Globs:
 
 ```yaml
-- name: 'VirusTotal'
-  uses: WoozyMasta/virustotal-action@v1
+- name: VirusTotal Artifacts Scan
+  uses: WoozyMasta/virustotal-action@v1.0.0
   with:
     github_token: ${{ secrets.GITHUB_TOKEN }}
     vt_api_key: ${{ secrets.VT_API_KEY }}
@@ -100,7 +101,7 @@ Multiple Globs:
 Simple Example:
 
 ```yaml
-name: 'VirusTotal Example'
+name: VirusTotal Example
 
 on:
   release:
@@ -108,13 +109,14 @@ on:
 
 jobs:
   test:
-    name: 'Test'
+    name: Test
     runs-on: ubuntu-latest
     timeout-minutes: 5
 
     steps:
-      - name: 'VirusTotal'
-        uses: WoozyMasta/virustotal-action@v1
+      - name: VirusTotal Artifacts Scan
+        uses: WoozyMasta/virustotal-action@v1.0.0
+            
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           vt_api_key: ${{ secrets.VT_API_KEY }}
