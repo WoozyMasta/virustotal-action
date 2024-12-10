@@ -42982,7 +42982,7 @@ const github = __nccwpck_require__(3228)
 const glob = __nccwpck_require__(7206)
 const fs = __nccwpck_require__(9896)
 const path = __nccwpck_require__(6928)
-const minimatch = __nccwpck_require__(3772);
+// const minimatch = require('minimatch');
 const { RateLimiter } = __nccwpck_require__(724)
 
 const vtUpload = __nccwpck_require__(9431)
@@ -43084,7 +43084,8 @@ async function processRelease(inputs, limiter, octokit, release) {
     const results = [];
     for (const asset of assets.data) {
         // Check if asset.name matches any of the patterns
-        const isMatched = patterns.some(pattern => minimatch(asset.name, pattern));
+        const isMatched = matchPattern(asset.name, inputs.files);
+        // const isMatched = patterns.some(pattern => minimatch(asset.name, pattern));
         if (!isMatched) {
             core.info(`Skipping Asset (not matched by file_globs): ${asset.name}`);
             continue;
@@ -43109,6 +43110,14 @@ async function processRelease(inputs, limiter, octokit, release) {
         results.push(result);
     }
     return results;
+}
+
+function matchPattern(name, patterns) {
+    return patterns.some(pattern => new RegExp(
+        '^' +
+        pattern.replace(/\*\*/g, '.*').replace(/\*/g, '[^/]*').replace(/\./g, '\\.') +
+        '$'
+    ).test(name));
 }
 
 /**
