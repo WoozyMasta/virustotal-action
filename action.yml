@@ -1,5 +1,5 @@
-name: "VirusTotal Action"
-description: "Scan Files using the VirusTotal API"
+name: "VirusTotal Artifacts Scan"
+description: "Scan files and releases with VirusTotal API"
 author: "WoozyMasta"
 branding:
   icon: "shield"
