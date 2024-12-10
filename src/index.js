@@ -7,68 +7,68 @@ const { RateLimiter } = require('limiter')
 
 const vtUpload = require('./vt')
 
-;(async () => {
-    try {
-        // Parse Inputs
-        const inputs = parseInputs()
-        // console.log('inputs:', inputs)
+    ; (async () => {
+        try {
+            // Parse Inputs
+            const inputs = parseInputs()
+            // console.log('inputs:', inputs)
 
-        // Set Variables
-        const octokit = github.getOctokit(inputs.token)
-        const release = await getRelease(octokit)
-        const limiter = new RateLimiter({
-            tokensPerInterval: inputs.rate,
-            interval: 'minute',
-        })
+            // Set Variables
+            const octokit = github.getOctokit(inputs.token)
+            const release = await getRelease(octokit)
+            const limiter = new RateLimiter({
+                tokensPerInterval: inputs.rate,
+                interval: 'minute',
+            })
 
-        /** @type {Object[]} */
-        let results
-        if (inputs.files?.length) {
-            core.info('\u001b[36mProcessing Files Globs')
-            results = await processFiles(inputs, limiter)
-        } else if (release) {
-            core.info('\u001b[36mProcessing Release Assets')
-            results = await processRelease(inputs, limiter, octokit, release)
-        } else {
-            return core.setFailed('No files or release to process.')
-        }
-        console.log('-'.repeat(40))
-        console.log('results:', results)
-
-        // Set Output
-        const output = []
-        for (const result of results) {
-            output.push(`${result.name}/${result.id}`)
-        }
-        core.setOutput('results', output.join(','))
-
-        // Update Release
-        if (release && inputs.update) {
-            core.info(`Updating Release ID: ${release.id}`)
-            let body = release.body
-            body += '\n\n🛡️ **VirusTotal Results:**'
-            for (const result of results) {
-                body += `\n- [${result.name}](${result.link})`
+            /** @type {Object[]} */
+            let results
+            if (inputs.files?.length) {
+                core.info('\u001b[36mProcessing Files Globs')
+                results = await processFiles(inputs, limiter)
+            } else if (release) {
+                core.info('\u001b[36mProcessing Release Assets')
+                results = await processRelease(inputs, limiter, octokit, release)
+            } else {
+                return core.setFailed('No files or release to process.')
             }
             console.log('-'.repeat(40))
-            console.log(`body:\n${body}`)
-            await octokit.rest.repos.updateRelease({
-                ...github.context.repo,
-                release_id: release.id,
-                body,
-            })
-        } else {
-            core.info(
-                `\u001b[33mSkipping release update because not release or not update_release`
-            )
-        }
+            console.log('results:', results)
 
-        core.info(`\u001b[32;1mFinished Success`)
-    } catch (e) {
-        console.log(e)
-        core.setFailed(e.message)
-    }
-})()
+            // Set Output
+            const output = []
+            for (const result of results) {
+                output.push(`${result.name}/${result.id}`)
+            }
+            core.setOutput('results', output.join(','))
+
+            // Update Release
+            if (release && inputs.update) {
+                core.info(`Updating Release ID: ${release.id}`)
+                let body = release.body
+                body += '\n### VirusTotal analysis results\n\n'
+                for (const result of results) {
+                    body += `* [${result.name}](${result.link})\n`
+                }
+                console.log('-'.repeat(40))
+                console.log(`body:\n${body}`)
+                await octokit.rest.repos.updateRelease({
+                    ...github.context.repo,
+                    release_id: release.id,
+                    body,
+                })
+            } else {
+                core.info(
+                    `\u001b[33mSkipping release update because not release or not update_release`
+                )
+            }
+
+            core.info(`\u001b[32;1mFinished Success`)
+        } catch (e) {
+            console.log(e)
+            core.setFailed(e.message)
+        }
+    })()
 
 /**
  * @function processRelease
