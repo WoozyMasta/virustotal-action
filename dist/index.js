@@ -45143,9 +45143,7 @@ async function processRelease(inputs, limiter, octokit, release) {
     }
 
     // Create Temp
-    console.log('RUNNER_TEMP:', process.env.RUNNER_TEMP);
     const assetsPath = path.join(process.env.RUNNER_TEMP, 'assets');
-    console.log('assetsPath:', assetsPath);
     if (!fs.existsSync(assetsPath)) {
         fs.mkdirSync(assetsPath);
     }
@@ -45156,6 +45154,13 @@ async function processRelease(inputs, limiter, octokit, release) {
     // Process Assets
     const results = [];
     for (const asset of assets.data) {
+        // Check match extension
+        const extname = path.extname(asset.name);
+        if (inputs.excludedExtensions.includes(extname)) {
+            core.info(`Skipping Asset (excluded by extension): ${asset.name}`);
+            continue;
+        }
+
         // Check if asset.name matches any of the patterns
         const isMatched = patterns.some(pattern => minimatch(asset.name, pattern));
         if (!isMatched) {
@@ -45195,23 +45200,36 @@ async function processFiles(inputs, limiter) {
     const globber = await glob.create(inputs.files.join('\n'), {
         matchDirectories: false,
     })
+
     const files = await globber.glob()
     console.log('files:', files)
+
     if (!files.length) {
         throw new Error('No files to process.')
     }
+
     const results = []
+
     for (const file of files) {
+
+        const extname = path.extname(file);
+        if (inputs.excludedExtensions.includes(extname)) {
+            core.info(`Skipping Asset (excluded by extension): ${file}`);
+            continue;
+        }
+
         const name = file.split('\\').pop().split('/').pop()
         core.info(`--- Processing File: ${name}`)
         if (inputs.rate) {
             const remainingRequests = await limiter.removeTokens(1)
             console.log('remainingRequests:', remainingRequests)
         }
+
         const result = await processVt(inputs, name, file)
         // console.log('result:', result)
         results.push(result)
     }
+
     return results
 }
 
@@ -45255,18 +45273,24 @@ async function getRelease(octokit) {
 function parseInputs() {
     const githubToken = core.getInput('github_token', { required: true })
     const vtApiKey = core.getInput('vt_api_key', { required: true })
-    const fileGlobs = core.getInput('file_globs')
+    const fileGlobs = core.getInput('file_globs', { required: false })
     console.log(`file_globs: "${fileGlobs}"`)
-    const updateRelease = core.getBooleanInput('update_release')
+    const excludedExtensionsInput = core.getInput('excluded_extensions', { required: false });
+    console.log(`excluded_extensions: "${excludedExtensionsInput}"`)
+    const updateRelease = core.getBooleanInput('update_release', { required: false })
     console.log('update_release:', updateRelease)
     const rateLimit = core.getInput('rate_limit', { required: true })
     console.log('rate_limit:', rateLimit)
+
+    const excludedExtensions = excludedExtensionsInput ? excludedExtensionsInput.split(',').map(ext => ext.trim()) : [];
+
     return {
         token: githubToken,
         key: vtApiKey,
         update: updateRelease,
         rate: parseInt(rateLimit),
         files: fileGlobs ? fileGlobs.split('\n') : [],
+        excludedExtensions: excludedExtensions,
     }
 }
 

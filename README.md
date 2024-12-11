@@ -14,13 +14,14 @@ for files up to `650MB`. Therefore, files over 32MB will consume 2 API calls.
 
 ## Inputs
 
-| input            | required | default | description                                 |
-| ---------------- | -------- | ------- | ------------------------------------------- |
-| `github_token`   | Yes      | -       | GitHub Token: `${{ secrets.GITHUB_TOKEN }}` |
-| `vt_api_key`     | Yes      | -       | VirusTotal API Key from VirusTotal \*       |
-| `file_globs`     | No       | -       | File Globs to Process, newline seperated \* |
-| `rate_limit`     | No       | 4       | API Calls Per Minute, `0` to disable        |
-| `update_release` | No       | true    | Update Release Notes, `false` to disable    |
+| input                 | required | default | description                                 |
+| --------------------- | -------- | ------- | ------------------------------------------- |
+| `github_token`        | `True`   | -       | GitHub Token: `${{ secrets.GITHUB_TOKEN }}` |
+| `vt_api_key`          | `True`   | -       | VirusTotal API Key from VirusTotal \*       |
+| `file_globs`          | `False`  | -       | File Globs to Process, newline seperated \* |
+| `excluded_extensions` | `False`  | -       | Extensions to exclude `.json,.txt,.log`     |
+| `rate_limit`          | `False`  | 4       | API Calls Per Minute, `0` to disable        |
+| `update_release`      | `False`  | true    | Update Release Notes, `false` to disable    |
 
 * `vt_api_key` - Get your API key from: <https://www.virustotal.com/gui/my-apikey>
 * `file_globs` - For glob pattern examples, see: <https://github.com/actions/toolkit/tree/main/packages/glob#patterns>
@@ -116,8 +117,9 @@ jobs:
     steps:
       - name: VirusTotal Artifacts Scan
         uses: WoozyMasta/virustotal-action@v1.0.0
-            
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           vt_api_key: ${{ secrets.VT_API_KEY }}
+          file_globs: my-app-*
+          excluded_extensions: "*.sbom.json,*.sbom.xml"
 ```
