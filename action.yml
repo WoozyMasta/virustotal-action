@@ -15,6 +15,9 @@ inputs:
   file_globs:
     description: "File Globs to Process"
     required: false
+  excluded_extensions:
+    description: "Extensions to exclude .json,.txt,.log"
+    required: false
   rate_limit:
     description: "Per Minute Rate Limit for API Calls"
     required: false
