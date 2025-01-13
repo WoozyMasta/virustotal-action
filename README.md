@@ -41,7 +41,7 @@ The Update Release option will append text similar to this to the release body:
 
 ---
 
-🛡️ **VirusTotal Results:**
+### VirusTotal analysis results
 
 * [install-linux.deb](https://www.virustotal.com/gui/file-analysis/ZDAzY2M2ZGQzZmEwZWEwZTI2NjQ5NmVjZDcwZmY0YTY6MTcxNzU2NzI3Ng==)
 * [install-macos.pkg](https://www.virustotal.com/gui/file-analysis/YTkzOGFjMDZhNTI3NmU5MmI4YzQzNzg5ODE3OGRkMzg6MTcxNzU2NzI3OA==)
