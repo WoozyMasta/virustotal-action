@@ -1,0 +1,36 @@
+name: Release gate
+
+on:
+  workflow_call:
+    inputs:
+      file_globs:
+        description: Files to submit during the pre-release gate
+        required: false
+        type: string
+        default: README.md
+    secrets:
+      VT_API_KEY:
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  integration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout release candidate
+        uses: actions/checkout@v6
+
+      - name: Submit release gate file to VirusTotal
+        uses: ./
+        with:
+          source: files
+          file_globs: ${{ inputs.file_globs }}
+          vt_api_key: ${{ secrets.VT_API_KEY }}
+          update_release: false
+          rate_limit: 0
+          retries: 1
+          request_timeout: 30
+          summary: true

@@ -7,30 +7,104 @@ branding:
 
 inputs:
   github_token:
-    description: "GitHub Token from secrets.GITHUB_TOKEN"
-    required: true
+    description: "GitHub API token"
+    required: false
+    default: "${{ github.token }}"
   vt_api_key:
-    description: "VirusTotal API Token from secrets"
+    description: "VirusTotal API key"
     required: true
+  source:
+    description: "Source mode: auto, release, or files"
+    required: false
+    default: "auto"
   file_globs:
-    description: "File Globs to Process"
+    description: "Local file globs; also used as release asset globs when asset_globs is empty"
+    required: false
+  asset_globs:
+    description: "Release asset name globs matched against basenames"
+    required: false
+  exclude_globs:
+    description: "Glob patterns excluded after inclusion matching"
     required: false
   excluded_extensions:
-    description: "Extensions to exclude .json,.txt,.log"
+    description: "Deprecated v1 exclusion alias: extensions or glob patterns"
+    required: false
+  release_id:
+    description: "Exact GitHub release database ID"
+    required: false
+  release_tag:
+    description: "Exact GitHub release tag"
+    required: false
+  release_sha:
+    description: "Commit SHA used to resolve a release"
     required: false
   rate_limit:
-    description: "Per Minute Rate Limit for API Calls"
+    description: "Maximum VirusTotal requests per minute; 0 disables client throttling"
     required: false
     default: "4"
   update_release:
-    description: "Update Release Notes with VT Links"
+    description: "Maintain the managed VirusTotal block in release notes"
     required: false
     default: "true"
+  wait_for_assets:
+    description: "Maximum seconds to wait for release assets"
+    required: false
+    default: "60"
+  asset_poll_interval:
+    description: "Seconds between release asset polls"
+    required: false
+    default: "5"
+  request_timeout:
+    description: "VirusTotal request timeout in seconds"
+    required: false
+    default: "120"
+  retries:
+    description: "Maximum retries for transient VirusTotal errors"
+    required: false
+    default: "4"
+  retry_base_delay:
+    description: "Initial retry delay in seconds"
+    required: false
+    default: "5"
+  retry_max_delay:
+    description: "Maximum retry delay in seconds"
+    required: false
+    default: "60"
+  require_all_globs:
+    description: "Fail unless every configured release asset glob matches"
+    required: false
+    default: "false"
+  fail_on_partial:
+    description: "Fail after processing all files when any file failed"
+    required: false
+    default: "true"
+  summary:
+    description: "Write scan details to the GitHub job summary"
+    required: false
+    default: "true"
+  wait_for_analysis:
+    description: "Poll VirusTotal until submitted analyses complete"
+    required: false
+    default: "false"
+  analysis_timeout:
+    description: "Maximum seconds to wait for each analysis"
+    required: false
+    default: "300"
 
 outputs:
   results:
-    description: "Generated Docker tags"
+    description: "Legacy comma-separated file/analysis-id list"
+  json:
+    description: "JSON array with per-file scan results"
+  release_id:
+    description: "Resolved GitHub release ID"
+  processed_count:
+    description: "Number of selected files"
+  success_count:
+    description: "Number of successful submissions"
+  failed_count:
+    description: "Number of failed submissions"
 
 runs:
-  using: "node24"
+  using: "node20"
   main: "dist/index.js"
